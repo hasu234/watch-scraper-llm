@@ -272,14 +272,10 @@ GET http://127.0.0.1:8000/products/top
 **Description:**  
 This endpoint retrieves reviews for a specific product identified by its `product_id`. The response includes pagination to manage the number of reviews returned.
 
----
-
 #### Path Parameters
 
 - **`product_id`** (integer):  
   The unique identifier of the product for which reviews are being retrieved.
-
----
 
 #### Query Parameters
 
@@ -289,7 +285,6 @@ This endpoint retrieves reviews for a specific product identified by its `produc
 - **`limit`** (integer, optional, default: `10`):  
   The maximum number of reviews to return per page. Must be greater than or equal to 1.
 
----
 
 **Example Request:**
 ```http
