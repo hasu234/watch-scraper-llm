@@ -1,6 +1,7 @@
 
 import os
 import time
+import json
 import random
 import schedule
 import psycopg2
@@ -8,6 +9,7 @@ import logging
 from datetime import datetime
 from dotenv import load_dotenv
 from scraper import scrape_amazon
+from psycopg2.extras import execute_values
 
 
 # Load environment variables from the .env file
@@ -37,13 +39,13 @@ def create_table_if_not_exists():
     create_table_query = """
     CREATE TABLE IF NOT EXISTS watches (
         id SERIAL PRIMARY KEY,
-        title VARCHAR(255),
-        company VARCHAR(255),
+        name VARCHAR(255),
+        brand VARCHAR(255),
         model VARCHAR(255),
         price DECIMAL(10, 2),
-        specifications JSON,
+        specifications JSONB,
         rating DECIMAL(3, 2),
-        review JSON,
+        reviews JSONB,
         n_rating INTEGER,
         stock TEXT,
         image_url TEXT,
@@ -56,28 +58,37 @@ def create_table_if_not_exists():
     cur.close()  # Close the cursor
     conn.close()  # Close the connection
 
-def insert_data(zipped_data):
+def insert_data(name, brand, model, price, specifications, rating, reviews, n_rating, stock, image):
     # Create the table if it doesn't exist
     create_table_if_not_exists()
 
     conn = connect_to_db()
-    cur = conn.cursor()
 
-    query = '''
-        INSERT INTO watches (
-            title, company, model, price, specifications, rating, review, n_rating, 
-            stock, image_url, scraped_at
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    '''
+    # Insert query for batch insert
+    query = """
+    INSERT INTO watches (name, brand, model, price, specifications, rating, reviews, n_rating, stock, image_url, scraped_at)
+    VALUES %s
+    """
 
-    # Use zip() to iterate over corresponding elements from each list
-    for data in zipped_data:
-        print("Inserting data:", data)
-        cur.execute(query, (*data, datetime.now()))
+    # Zip the data together, convert specifications and reviews to JSON
+    data = [
+        (name[i], brand[i], model[i], price[i], json.dumps(specifications[i]), rating[i], json.dumps(reviews[i]), n_rating[i], stock[i], image[i], datetime.now())
+        for i in range(len(name))
+    ]
+    print("Inserting data...")
 
-    conn.commit()  # Save changes to the database
-    cur.close()  # Close the cursor
-    conn.close()  # Close the database connection
+    try:
+        # Open a cursor to perform database operations
+        with conn.cursor() as cursor:
+            # Perform batch insert
+            execute_values(cursor, query, data)
+            conn.commit()  # Commit the transaction
+            print("All data inserted successfully.")
+    except Exception as e:
+        print(f"Error inserting data: {e}")
+        conn.rollback()  # Rollback in case of error
+    finally:
+        conn.close()  # Close the connection
 
 
 # Function to run the scraper at intervals
@@ -85,10 +96,9 @@ def scheduled_scrape():
     # List of watch URLs to scrape (you can dynamically generate or read from a file)
     item = "watch"
     # logger.info(f"Scraping Amazon for {item}")
-    title, company, model, price, specifications, rating, reviews, n_rating, stock, image = scrape_amazon(item)
-    for i in range(len(title)):
-        zipped_data = zip(title, company, model, price, specifications, rating, reviews, n_rating, stock, image)
-        insert_data(zipped_data)  # Insert the scraped data into
+    name, brand, model, price, specifications, rating, reviews, n_rating, stock, image = scrape_amazon(item)
+
+    insert_data(name, brand, model, price, specifications, rating, reviews, n_rating, stock, image)  # Insert the scraped data into
 
     time.sleep(random.randint(5, 15))  # Random delay to avoid bot detection
 

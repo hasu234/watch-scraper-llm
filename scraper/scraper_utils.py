@@ -1,7 +1,7 @@
 import time
-import json
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+import pandas as pd
 
 # Function to scrape Amazon watches
 def scrape_amazon(search_text):
@@ -21,8 +21,8 @@ def scrape_amazon(search_text):
     driver.find_element(By.XPATH, '//*[@id="nav-search-submit-button"]').click()
 
     link = []
-    title = []
-    company = []
+    name = []
+    brand = []
     price = []
     model = []
     rating = []
@@ -32,7 +32,9 @@ def scrape_amazon(search_text):
     reviews = []
     image = []
 
-    for i in range(1):
+    # scrap for 5 search pages
+    for i in range(5):
+        print("Collecting product link from page "+str(i+1)+" out of 5.")
         #product urls
         prod_links = driver.find_elements(By.XPATH, '//a[@class="a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal"]')
         # selenium_links.extend(prod_links)
@@ -40,28 +42,29 @@ def scrape_amazon(search_text):
             url = j.get_attribute("href")
             link.append(url)
 
-        #titles
-        prod_titles = driver.find_elements(By.XPATH, "//*[@class='a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal']")
-        for t in prod_titles:
-            title.append(t.text)
+        #names
+        prod_names = driver.find_elements(By.XPATH, "//*[@class='a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal']")
+        for t in prod_names:
+            name.append(t.text)
         
-        #company
-        prod_company = driver.find_elements(By.XPATH, "//*[@class='a-size-base-plus a-color-base']")
-        for c in prod_company:
-            company.append(c.text)
+        #brand
+        prod_brand = driver.find_elements(By.XPATH, "//*[@class='a-size-base-plus a-color-base']")
+        for c in prod_brand:
+            brand.append(c.text)
         
         # next_button
         next_button = driver.find_element(By.XPATH, '//a[contains(@aria-label, "Go to next page")]')
         next_button.click()
         time.sleep(3)
 
-
-    for i in link[:5]: # [:5]:
+    for i in link:
+        print("Collecting product details from link "+str(link.index(i)+1)+" out of "+str(len(link)))
         driver.get(i)
         #price, rating, no. of ratings, in stock
         
         try:
             prod_price = driver.find_element(By.XPATH, '//div[@class="a-row"]//span[@class="a-price-whole"]').text
+            prod_price = prod_price.replace(",", "")
         except:
             prod_price = None
 
@@ -75,6 +78,7 @@ def scrape_amazon(search_text):
         try:
             n_rates = driver.find_element(By.XPATH, '//span[@id="acrCustomerReviewText"]').text
             n_rates = n_rates.split(" ")[0]
+            n_rates = n_rates.replace(",", "")
         except:
             n_rates = None
         
@@ -188,8 +192,22 @@ def scrape_amazon(search_text):
         n_rating.append(n_rates)
         stock.append(prod_stock)
         image.append(image_link)
-    
-    specification = json.dumps(specifications)
-    reviews = json.dumps(reviews)
 
-    return title[:5], company[:5], model, price, specifications, rating, reviews, n_rating, stock, image
+    if len(name) != len(brand) or len(name) != len(price) or len(name) != len(model) or len(name) != len(rating) or len(name) != len(reviews) or len(name) != len(n_rating) or len(name) != len(stock) or len(name) != len(specifications) or len(name) != len(image):
+        print("Data Mismatch")
+        
+    else:
+        pd.DataFrame({
+            "Name": name,
+            "Brand": brand,
+            "Price": price,
+            "Model": model,
+            "Rating": rating,
+            "Reviews": reviews,
+            "Number of Ratings": n_rating,
+            "Stock": stock,
+            "Specifications": specifications,
+            "Image": image
+        }).to_csv("amazon_watches.csv", index=False)
+
+    return name, brand, model, price, specifications, rating, reviews, n_rating, stock, image
