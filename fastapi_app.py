@@ -1,7 +1,12 @@
+import logging
 from fastapi import FastAPI, Query, HTTPException
 from typing import List, Optional, Dict
 from pydantic import BaseModel
 from scraper import connect_to_db
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # FastAPI app instance
 app = FastAPI()
@@ -15,7 +20,6 @@ class Product(BaseModel):
     price: Optional[float] = None
     specifications: Optional[Dict] = None
     rating: Optional[float] = None
-    # reviews: Optional[List[Dict]] = None
     n_rating: Optional[int] = None
     stock: Optional[str] = None
     image_url: Optional[str] = None
@@ -69,16 +73,19 @@ def get_products(
         if sort_by in ['price', 'rating']:
             query += f" ORDER BY {sort_by} {order.upper()}"
         else:
+            logger.error(f"Invalid sort_by value: {sort_by}")
             raise HTTPException(status_code=400, detail="Invalid sort_by value")
 
         # Pagination
         offset = (page - 1) * limit
         query += f" LIMIT {limit} OFFSET {offset}"
 
+        logger.info(f"Executing query: {query}")
         cursor.execute(query)
         products = cursor.fetchall()
 
         if not products:
+            logger.warning("No products found")
             raise HTTPException(status_code=404, detail="No products found")
 
         # Convert result set to list of Product instances
@@ -92,7 +99,6 @@ def get_products(
                 price=float(prod[4]) if prod[4] is not None else None,
                 specifications=prod[5],
                 rating=float(prod[6]) if prod[6] is not None else None,
-                # reviews=prod[7],
                 n_rating=prod[8],
                 stock=prod[9],
                 image_url=prod[10],
@@ -103,8 +109,8 @@ def get_products(
         return result_list
 
     except Exception as e:
+        logger.error(f"Error fetching products: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
     finally:
         conn.close()
 
@@ -112,8 +118,11 @@ def get_products(
 # Endpoint to get top products based on rating and number of reviews
 @app.get("/products/top", response_model=List[TopProduct])
 def get_top_products():
+    """
+    Retrieve the top 10 products from the database based on their rating and number of ratings.
+    """
     try:
-        conn = connect_to_db()  # Replace with your actual database connection function
+        conn = connect_to_db()
         cursor = conn.cursor()
         query = """
         SELECT *
@@ -122,10 +131,12 @@ def get_top_products():
         ORDER BY rating DESC, n_rating DESC
         LIMIT 10;
         """
+        logger.info("Fetching top products based on rating and number of reviews")
         cursor.execute(query)
         top_products = cursor.fetchall()
 
         if not top_products:
+            logger.warning("No top products found")
             raise HTTPException(status_code=404, detail="No top products found")
 
         # Convert the fetched tuples into Product instances
@@ -134,20 +145,22 @@ def get_top_products():
            product = TopProduct(
                 id=result[0],
                 name=result[1] if result[1] is not None else None,
-                rating=float(result[6]) if result[6] is not None else None,  # Allow rating to be None
-                n_rating=result[8] if result[8] is not None else 0,  # Default n_rating to 0 if None
+                rating=float(result[6]) if result[6] is not None else None,
+                n_rating=result[8] if result[8] is not None else 0,
                 reviews=result[7] if result[7] is not None else [],  # Use empty list if None
             )
-           
            products.append(product)
 
         return products
+
     except Exception as e:
+        logger.error(f"Error fetching top products: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
     finally:
         cursor.close()
 
 
+# Endpoint to get reviews of a specific product with pagination
 @app.get("/products/{product_id}/reviews", response_model=List[Dict])
 def get_product_reviews(
     product_id: int,
@@ -165,10 +178,12 @@ def get_product_reviews(
         FROM watches
         WHERE id = %s
         """
+        logger.info(f"Fetching reviews for product ID: {product_id} (page: {page}, limit: {limit})")
         cursor.execute(query, (product_id,))
         result = cursor.fetchone()
 
         if not result:
+            logger.warning(f"Product ID {product_id} not found")
             raise HTTPException(status_code=404, detail="Product not found")
 
         reviews = result[0]
@@ -183,8 +198,8 @@ def get_product_reviews(
         return paginated_reviews
 
     except Exception as e:
+        logger.error(f"Error fetching reviews: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) from e
     finally:
         cursor.close()
         conn.close()
-

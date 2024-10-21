@@ -1,0 +1,138 @@
+{
+	"info": {
+		"_postman_id": "cb442c9b-3795-4a90-a30c-6c1f1fa87f0a",
+		"name": "scraper",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18532445"
+	},
+	"item": [
+		{
+			"name": "products",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "brand",
+							"value": "OLEVS",
+							"description": "example: Acnos, OLEVS",
+							"type": "text"
+						},
+						{
+							"key": "model",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "min_price",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "max_price",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "min_rating",
+							"value": "",
+							"description": "1.0 to 5.0",
+							"type": "text"
+						},
+						{
+							"key": "sort_by",
+							"value": "price",
+							"description": "price or rating",
+							"type": "text"
+						},
+						{
+							"key": "order",
+							"value": "asc",
+							"description": "asc or desc",
+							"type": "text"
+						},
+						{
+							"key": "page",
+							"value": "1",
+							"description": "from page number",
+							"type": "text"
+						},
+						{
+							"key": "limit",
+							"value": "10",
+							"description": "content per page",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/products",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "top",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/products/top",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"products",
+						"top"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "reviews",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/products/315/reviews",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"products",
+						"315",
+						"reviews"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
