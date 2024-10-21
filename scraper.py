@@ -8,27 +8,19 @@ import psycopg2
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
-from scraper import scrape_amazon
+from scraper import scrape_amazon, connect_to_db
 from psycopg2.extras import execute_values
 
 
 # Load environment variables from the .env file
 load_dotenv()
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Function to connect to PostgreSQL using environment variables
-def connect_to_db():
-    conn = psycopg2.connect(
-        host=os.getenv('DB_HOST'),
-        port=os.getenv('DB_PORT'),
-        database=os.getenv('DB_NAME'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD')
-    )
-    return conn
+# Set up the logger
+logging.basicConfig(
+    level=logging.INFO,  # Set the logging level (INFO, DEBUG, WARNING, ERROR, CRITICAL)
+    format='%(asctime)s - %(levelname)s - %(message)s',  # Set log message format
+    handlers=[logging.StreamHandler()]  # Default: log to the console
+)
 
 # Function to create the table if it doesn't exist
 def create_table_if_not_exists():
@@ -75,7 +67,7 @@ def insert_data(name, brand, model, price, specifications, rating, reviews, n_ra
         (name[i], brand[i], model[i], price[i], json.dumps(specifications[i]), rating[i], json.dumps(reviews[i]), n_rating[i], stock[i], image[i], datetime.now())
         for i in range(len(name))
     ]
-    print("Inserting data...")
+    logging.info(f"Inserting {len(data)} records into the database...")
 
     try:
         # Open a cursor to perform database operations
@@ -83,9 +75,9 @@ def insert_data(name, brand, model, price, specifications, rating, reviews, n_ra
             # Perform batch insert
             execute_values(cursor, query, data)
             conn.commit()  # Commit the transaction
-            print("All data inserted successfully.")
+            logging.info("Data inserted successfully!")
     except Exception as e:
-        print(f"Error inserting data: {e}")
+        logging.error(f"Error inserting data: {e}")
         conn.rollback()  # Rollback in case of error
     finally:
         conn.close()  # Close the connection

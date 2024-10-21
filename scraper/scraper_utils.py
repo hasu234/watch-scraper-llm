@@ -193,21 +193,21 @@ def scrape_amazon(search_text):
         stock.append(prod_stock)
         image.append(image_link)
 
-    if len(name) != len(brand) or len(name) != len(price) or len(name) != len(model) or len(name) != len(rating) or len(name) != len(reviews) or len(name) != len(n_rating) or len(name) != len(stock) or len(name) != len(specifications) or len(name) != len(image):
-        print("Data Mismatch")
+    # if len(name) != len(brand) or len(name) != len(price) or len(name) != len(model) or len(name) != len(rating) or len(name) != len(reviews) or len(name) != len(n_rating) or len(name) != len(stock) or len(name) != len(specifications) or len(name) != len(image):
+    #     print("Data Mismatch")
         
-    else:
-        pd.DataFrame({
-            "Name": name,
-            "Brand": brand,
-            "Price": price,
-            "Model": model,
-            "Rating": rating,
-            "Reviews": reviews,
-            "Number of Ratings": n_rating,
-            "Stock": stock,
-            "Specifications": specifications,
-            "Image": image
-        }).to_csv("amazon_watches.csv", index=False)
+    # else:
+    #     pd.DataFrame({
+    #         "Name": name,
+    #         "Brand": brand,
+    #         "Price": price,
+    #         "Model": model,
+    #         "Rating": rating,
+    #         "Reviews": reviews,
+    #         "Number of Ratings": n_rating,
+    #         "Stock": stock,
+    #         "Specifications": specifications,
+    #         "Image": image
+    #     }).to_csv("amazon_watches.csv", index=False)
 
     return name, brand, model, price, specifications, rating, reviews, n_rating, stock, image
