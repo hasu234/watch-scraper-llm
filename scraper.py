@@ -67,7 +67,7 @@ def insert_data(name, brand, model, price, specifications, rating, reviews, n_ra
         (name[i], brand[i], model[i], price[i], json.dumps(specifications[i]), rating[i], json.dumps(reviews[i]), n_rating[i], stock[i], image[i], datetime.now())
         for i in range(len(name))
     ]
-    logging.info(f"Inserting {len(data)} records into the database...")
+    logging.info("Inserting %s records into the database...", len(data))
 
     try:
         # Open a cursor to perform database operations
@@ -76,8 +76,8 @@ def insert_data(name, brand, model, price, specifications, rating, reviews, n_ra
             execute_values(cursor, query, data)
             conn.commit()  # Commit the transaction
             logging.info("Data inserted successfully!")
-    except Exception as e:
-        logging.error(f"Error inserting data: {e}")
+    except psycopg2.Error as e:
+        logging.error("Error inserting data: %s", e)
         conn.rollback()  # Rollback in case of error
     finally:
         conn.close()  # Close the connection
