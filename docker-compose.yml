@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db  # Refer to the service name 'db' as the host
+      - DB_PORT=5432  # Default PostgreSQL port
+      - DB_NAME=scraper  # Database name from your Postgres config
+      - DB_USER=postgres  # Username from Postgres config
+      - DB_PASSWORD=hasu  # Password from Postgres config
+    depends_on:
+      - db
+    volumes:
+      - .:/app  # Mount the current directory to /app in the container
+
+  db:
+    image: postgres:14  # You can choose a specific version
+    restart: always
+    environment:
+      POSTGRES_DB: scraper
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: hasu
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"  # pgAdmin will be accessible on port 5050
+    depends_on:
+      - db
+
+volumes:
+  db_data:
