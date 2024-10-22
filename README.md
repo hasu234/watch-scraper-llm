@@ -42,6 +42,8 @@ watch-scraper-llm
 │   ├── document_loader.py   # Data loader for starting conversation
 │   ├── llm.py               # Prompt and Response configuration
 │   ├── models.py            # LLM models utils
+├── deployment               # Deployment Documentation folder
+│   ├── README.md            # Documentation for deployment services
 ├── fastapi_app.py           # Main FastAPI application
 ├── scraper.py               # Selenium-based scraper script
 ├── streamlit_app.py         # Streamlit application

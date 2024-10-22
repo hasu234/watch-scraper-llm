@@ -11,13 +11,13 @@ EMBEDDING_MODEL = "nomic-embed-text"
 PATH = "ChatData"
 
 
-st.title("RAG-based Local Chat Box")
+st.title("RAG-based Conversational Agent")
 
 if "list_of_models" not in st.session_state:
     st.session_state["list_of_models"] = get_list_of_models()
 
 selected_model = st.sidebar.selectbox(
-    "Select a model:", st.session_state["list_of_models"]
+    "Select Model:", st.session_state["list_of_models"]
 )
 
 if st.session_state.get("ollama_model") != selected_model:
@@ -26,7 +26,7 @@ if st.session_state.get("ollama_model") != selected_model:
 
 
 # Folder selection
-folder_path = st.sidebar.text_input("Enter the folder path:", PATH)
+folder_path = st.sidebar.text_input("Folder Name:", PATH)
 
 if folder_path:
     if not os.path.isdir(folder_path):
