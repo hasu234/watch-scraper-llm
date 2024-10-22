@@ -39,8 +39,12 @@ watch-scraper-llm
 │   ├── __init__.py          # Initializes the scraper package
 │   ├── dbconnection.py      # Database connection utilities
 │   ├── scraper_utils.py     # Helper functions for scraping
+│   ├── document_loader.py   # Data loader for starting conversation
+│   ├── llm.py               # Prompt and Response configuration
+│   ├── models.py            # LLM models utils
 ├── fastapi_app.py           # Main FastAPI application
 ├── scraper.py               # Selenium-based scraper script
+├── streamlit_app.py         # Streamlit application
 ├── models.py                # Pydantic models for API responses
 ├── requirements.txt         # Python dependencies
 ├── Dockerfile               # Dockerfile for FastAPI app
@@ -98,7 +102,7 @@ conda activate scraper
 ```bash
 pip install -r requirements.txt
 ```
-### Running the Scrapper
+# Running the Scrapper
 Run the ```scraper.py``` file using
 ```bash
 python scrappr.py
@@ -109,14 +113,14 @@ The ```scraper.py``` has a scheduled_scrape function which would schedule the sc
 
 The console log should report ```Data inserted successfully!``` if everything went good. 
 
-## Running the FastAPI application
+# Running the FastAPI application
 Run the ```fastapi_app.py``` using 
 ```bash
 uvicorn fastapi_app:app
 ```
 It would start running on ```localhost:8000``` or ```127.0.0.1:8000``` port. 
 
-# Running on Docker
+## Running on Docker
 ## Run the Dockerized Application
 Before starting with docker, make sure the docker daemon is running.
 
@@ -326,6 +330,13 @@ GET http://127.0.0.1:8000/products/315/reviews?page=1&limit=5
   }
 ]
 ```
+
+# Running the RAG based Conversational Agent
+The RAG based conversational agent can be run using this command. 
+```bash
+streamlit run streamlit_app.py
+```
+This command would open a an interative webpage on ```http://localhost:8502/``` this address. This pipeline needs to have Ollama running on local and all required model should have available on ```ollama.list()["models"]```. For this repo I am using ```nomic-embed-text``` as the embedding model and ```llama2``` as the language model. 
 
 ## Logging
 The application logs various events and errors. Logs are available in the console output where the application is running.

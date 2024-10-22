@@ -8,3 +8,12 @@ uvicorn
 sqlalchemy
 selenium
 python-dotenv
+openai
+langchain
+langchain-community 
+langchain-core
+chromadb
+tiktoken
+sentence_transformers
+streamlit
+ollama
